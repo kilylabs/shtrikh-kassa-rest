@@ -1,0 +1,3 @@
+[submodule "lib/shtrihm-fr"]
+	path = lib/shtrihm-fr
+	url = https://github.com/rosix-ru/shtrihm-fr.git
