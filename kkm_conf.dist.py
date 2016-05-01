@@ -1,5 +1,8 @@
 import serial
 
+LISTEN_HOST = '0.0.0.0'
+LISTEN_PORT = 5000
+
 MONGO_URI = "mongodb://<user>:<password>@<host>:<port>/<db>"
 DEBUG = True
 
