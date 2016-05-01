@@ -5,6 +5,7 @@ import time
 from datetime import datetime
 import sys
 from eve import Eve
+import pprint
 
 import kkm_conf
 sys.path.append(os.path.join(os.path.dirname(__file__), "lib"))
@@ -43,16 +44,13 @@ def on_inserted_checks(items):
         for json_data in items:
             sfrk.waitReady();
 
-	    try: 
-	        sfrk.cancelCheck();
-            except kilykkt.kkt.KktError,e:
-                print "err";
-            except TypeError,e2:
-                print "err2";
-
             srq = sfrk.statusRequest()
             if srq['kkt_mode'] == 3:
+                print "Closing open session..."
                 sfrk.closeSession();
+            elif srq['kkt_mode'] == 8:
+                print "Cancelling check..."
+                sfrk.cancelCheck();
 
             if ('type' in json_data):
                 types = {
