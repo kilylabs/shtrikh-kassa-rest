@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 import os,os.path
 import string
+import time
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "shtrihm-fr"))
@@ -152,6 +153,37 @@ class KilyKKT(kkt.KKT):
         data, error, command = self.ask(command, params)
         operator = ord(data[0])
         return operator
+
+    def setDatetime(self,datetime):
+        now = datetime.now()
+        year = int(now.strftime("%Y"))
+        month = int(now.strftime("%m").lstrip("0"))
+        day = int(now.strftime("%d").lstrip("0"))
+        hour = int(now.strftime("%H").lstrip("0"))
+        minute = int(now.strftime("%M").lstrip("0"))
+        second = int(now.strftime("%S").lstrip("0"))
+
+        #operator = self.x22(year,month,day)
+        #operator = self.x23(year,month,day)
+        operator = self.x21(hour,minute,second)
+
+        return operator
+
+    def resetSerial(self):
+        self.conn.setDTR(False)
+        time.sleep(1)
+        self.conn.flushInput()
+        self.conn.setDTR(True)
+
+    def waitReady(self):
+        n = 0
+        timeout = kkt.MIN_TIMEOUT
+        answer = False
+        while not answer and n < kkt.MAX_ATTEMPT:
+            time.sleep(timeout)
+            n += 1
+            timeout *= 1.5
+            answer = self.check_NAK();
 
 class KilyKktError(kkt.KktError):
     pass
