@@ -2,6 +2,7 @@
 import os,os.path
 import string
 import time
+from datetime import datetime
 import sys
 from eve import Eve
 
@@ -11,20 +12,25 @@ import kilykkt
 
 app = Eve(settings='lib/rest_conf.py')
 
+sfrk = kilykkt.KilyKKT(
+        password=kkm_conf.PASSWORD,
+        admin_password=kkm_conf.ADMIN_PASSWORD,
+        port=kkm_conf.PORT,
+        bod=kkm_conf.BAUD_RATE,
+        parity=kkm_conf.PARITY,
+        stopbits=kkm_conf.STOPBITS,
+        timeout=kkm_conf.TIMEOUT,
+        writeTimeout=kkm_conf.WRITE_TIMEOUT
+)
+sfrk.resetSerial()
+
 def on_inserted_report(items):
     print 'About to store report'
     if items:
-        sfrk = kilykkt.KilyKKT(
-            password=kkm_conf.PASSWORD,
-            admin_password=kkm_conf.ADMIN_PASSWORD,
-            port=kkm_conf.PORT,
-            bod=kkm_conf.BAUD_RATE,
-            parity=kkm_conf.PARITY,
-            stopbits=kkm_conf.STOPBITS,
-            timeout=kkm_conf.TIMEOUT,
-            writeTimeout=kkm_conf.WRITE_TIMEOUT
-        )
+        #sfrk.setDatetime(datetime.now())
         for json_data in items:
+            sfrk.waitReady();
+
             if json_data['type'] == 'x':
                 sfrk.printSession()
             elif json_data['type'] == 'z':
@@ -33,17 +39,9 @@ def on_inserted_report(items):
 def on_inserted_checks(items):
     print 'About to store checks'
     if items:
-        sfrk = kilykkt.KilyKKT(
-            password=kkm_conf.PASSWORD,
-            admin_password=kkm_conf.ADMIN_PASSWORD,
-            port=kkm_conf.PORT,
-            bod=kkm_conf.BAUD_RATE,
-            parity=kkm_conf.PARITY,
-            stopbits=kkm_conf.STOPBITS,
-            timeout=kkm_conf.TIMEOUT,
-            writeTimeout=kkm_conf.WRITE_TIMEOUT
-        )
+        #sfrk.setDatetime(datetime.now())
         for json_data in items:
+            sfrk.waitReady();
 
 	    try: 
 	        sfrk.cancelCheck();
