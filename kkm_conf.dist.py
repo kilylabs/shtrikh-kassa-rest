@@ -1,4 +1,5 @@
 import serial
+import logging
 
 LISTEN_HOST = '0.0.0.0'
 LISTEN_PORT = 5000
