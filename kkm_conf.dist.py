@@ -5,6 +5,7 @@ LISTEN_PORT = 5000
 
 MONGO_URI = "mongodb://<user>:<password>@<host>:<port>/<db>"
 DEBUG = True
+DEBUG_LEVEL = logging.DEBUG
 
 PORT = "/dev/ttyUSB0"
 BAUD_RATE = 115200 

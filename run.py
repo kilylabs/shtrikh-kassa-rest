@@ -6,50 +6,41 @@ from datetime import datetime
 import sys
 from eve import Eve
 import pprint
+import logging
+from logging.handlers import RotatingFileHandler
 
 import kkm_conf
+
+logging.basicConfig(format = u'%(levelname)-8s [%(asctime)s] %(message)s', level = kkm_conf.DEBUG_LEVEL, filename = os.path.join(os.path.dirname(__file__), "log","kkm.log"),backupCount=5)
+
 sys.path.append(os.path.join(os.path.dirname(__file__), "lib"))
 import kilykkt
 
-app = Eve(settings='lib/rest_conf.py')
-
-sfrk = kilykkt.KilyKKT(
-        password=kkm_conf.PASSWORD,
-        admin_password=kkm_conf.ADMIN_PASSWORD,
-        port=kkm_conf.PORT,
-        bod=kkm_conf.BAUD_RATE,
-        parity=kkm_conf.PARITY,
-        stopbits=kkm_conf.STOPBITS,
-        timeout=kkm_conf.TIMEOUT,
-        writeTimeout=kkm_conf.WRITE_TIMEOUT
-)
-sfrk.resetSerial()
-
 def on_inserted_report(items):
-    print 'About to store report'
+    app.logger.info('About to store report')
     if items:
-        #sfrk.setDatetime(datetime.now())
+        app.logger.debug('Report data is: %s',pprint.pformat(items))
+        sfrk = kilykkt.KilyKKT(
+            logger=app.logger
+        )
         for json_data in items:
-            sfrk.waitReady();
-
             if json_data['type'] == 'x':
                 sfrk.printSession()
             elif json_data['type'] == 'z':
                 sfrk.closeSession()
 
 def on_inserted_checks(items):
-    print 'About to store checks'
+    app.logger.info('About to store checks')
     if items:
-        #sfrk.setDatetime(datetime.now())
+        app.logger.debug('Check data is: %s',pprint.pformat(items))
+        sfrk = kilykkt.KilyKKT(
+            logger=app.logger
+        )
         for json_data in items:
-            sfrk.waitReady();
-
             srq = sfrk.statusRequest()
             if srq['kkt_mode'] == 3:
-                print "Closing open session..."
                 sfrk.closeSession();
             elif srq['kkt_mode'] == 8:
-                print "Cancelling check..."
                 sfrk.cancelCheck();
 
             if ('type' in json_data):
@@ -111,8 +102,10 @@ def on_inserted_checks(items):
             sfrk.closeCheck(0,pays,0,taxes,text=u"------------------")
 
 
+app = Eve(settings='lib/rest_conf.py')
 app.on_inserted_checks += on_inserted_checks
 app.on_inserted_report += on_inserted_report
 
 if __name__ == '__main__':
+    app.logger.info("starting kkm app...")
     app.run(host=kkm_conf.LISTEN_HOST,port=kkm_conf.LISTEN_PORT)
