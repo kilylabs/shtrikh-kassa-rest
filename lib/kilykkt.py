@@ -111,7 +111,7 @@ class KilyKKT(kkt.KKT):
                     двухбайтного числа (см. документацию)
                 Зарезервировано (3 байта)
         """
-        return self.wrap("x10")
+        return self.wrap("x10_enh")
 
     def printSession(self):
         """ Суточный отчет без гашения
@@ -224,6 +224,51 @@ class KilyKKT(kkt.KKT):
                 Порядковый номер оператора (1 байт) 1...30
         """
         return self.wrap("xC2",barcode)
+
+    def x10_enh(self):
+        """ Короткий запрос состояния ФР
+            Команда: 10H. Длина сообщения: 5 байт.
+                Пароль оператора (4 байта)
+            Ответ: 10H. Длина сообщения: 16 байт.
+                Код ошибки (1 байт)
+                Порядковый номер оператора (1 байт) 1...30
+                Флаги ККТ (2 байта)
+                Режим ККТ (1 байт)
+                Подрежим ККТ (1 байт)
+                Количество операций в чеке (1 байт) младший байт
+                    двухбайтного числа (см. документацию)
+                Напряжение резервной батареи (1 байт)
+                Напряжение источника питания (1 байт)
+                Код ошибки ФП (1 байт)
+                Код ошибки ЭКЛЗ (1 байт)
+                Количество операций в чеке (1 байт) старший байт
+                    двухбайтного числа (см. документацию)
+                Зарезервировано (3 байта)
+        """
+        command = 0x10
+        params = self.admin_password
+        data, error, command = self.ask(command,params)
+
+        # Флаги ККТ
+        kkt_flags = kkt.string2bits(data[2] + data[1]) # старший байт и младший байт
+        kkt_flags = [ kkt.KKT_FLAGS[i] for i, x in enumerate(kkt_flags) if x ] 
+        # Количество операций
+        operations = kkt.int2.unpack(data[10]+data[5]) # старший байт и младший байт
+
+        result = {
+            'error':           error,
+            'operator':        ord(data[0]),
+            'kkt_flags':       kkt_flags,
+            'kkt_mode':        ord(data[3]),
+            'kkt_submode':     ord(data[4]),
+            'voltage_battery': ord(data[6]),
+            'voltage_power':   ord(data[7]),
+            'fp_error':        ord(data[8]),
+            'eklz_error':      ord(data[9]),
+            'operations':      operations,
+            'reserve':         data[11:],
+        }
+        return result
 
 class KilyKktError(kkt.KktError):
     pass
