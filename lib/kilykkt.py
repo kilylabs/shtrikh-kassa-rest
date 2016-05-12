@@ -62,6 +62,9 @@ class KilyKKT(kkt.KKT):
                 else:
                     self._releaseLock()
                     raise
+            except:
+                self._releaseLock()
+                raise
             break
 
         self._releaseLock()
@@ -90,6 +93,42 @@ class KilyKKT(kkt.KKT):
 
         return True
 
+    def _read(self, read=None):
+        """ Высокоуровневый метод считывания соединения """
+        s = self.conn.read(read)
+        self.logger.debug("Reading: "+":".join("{:02x}".format(ord(c)) for c in s)) if self.logger else False
+        return s
+
+    def ask(self, command, params=None, sleep=1, pre_clear=True,\
+                without_password=False, disconnect=True, quick=False):
+        """ Высокоуровневый метод получения ответа. Состоит из
+            последовательной цепочки действий. 
+            
+            Возвращает позиционные параметры: (data, error, command)
+        """
+
+        #~ raise KktError('Тест ошибки')
+        if quick:
+            pre_clear  = False
+            disconnect = False
+            sleep      = 0
+
+        if params is None and not without_password:
+            params = self.password
+        #~ if pre_clear:
+            #~ self.clear()
+        self.send(command, params, quick=quick)
+        if sleep:
+            self.logger.debug("Sleeping for %d sec",sleep) if self.logger else False
+            time.sleep(sleep)
+        a = self.read()
+        answer, error, command = (a['data'], a['error'], a['command'])
+        if disconnect:
+            self.disconnect()
+        if error:
+            raise kkt.KktError(error)
+
+        return answer, error, command
 
     def statusRequest(self):
         """ Короткий запрос состояния ФР
@@ -205,6 +244,7 @@ class KilyKKT(kkt.KKT):
                 Код ошибки (1 байт)
                 Порядковый номер оператора (1 байт) 1...30
         """
+        time.sleep(1)
         return self.wrap("x80",count,price,text,department,taxes)
 
     def printString(self, text='', control_tape=False):
