@@ -18,6 +18,12 @@ class KilyKKT(kkt.KKT):
 
     lock = threading.Lock()
     logger = False
+    sale_types = { 
+            0:0x80,
+            1:0x81,
+            2:0x82,
+            3:0x83
+    }
 
     """ Класс с основными функциями REST API """
 
@@ -228,7 +234,7 @@ class KilyKKT(kkt.KKT):
         """
         return self.wrap("x88")
 
-    def sale(self, price, text='', count=1, department=0, taxes=[0,0,0,0]):
+    def sale(self, sale_type, price, text='', count=1, department=0, taxes=[0,0,0,0]):
         """ Продажа
             Команда: 80H. Длина сообщения: 60 байт.
                 Пароль оператора (4 байта)
@@ -244,8 +250,7 @@ class KilyKKT(kkt.KKT):
                 Код ошибки (1 байт)
                 Порядковый номер оператора (1 байт) 1...30
         """
-        time.sleep(1)
-        return self.wrap("x80",count,price,text,department,taxes)
+        return self.wrap("_x8count",self.sale_types[sale_type],count,price,text,department,taxes)
 
     def printString(self, text='', control_tape=False):
         """ Печать строки без ограничения на 36 символов
