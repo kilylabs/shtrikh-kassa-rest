@@ -44,21 +44,29 @@ class KilyKKT(kkt.KKT):
                 writeTimeout=kkm_conf.WRITE_TIMEOUT,
                 **kwargs
         )
+        self.resetSerial()
 
-    def _acquireLock(self):
+    def acquireLock(self):
         self.logger.debug("Aquiring lock...") if self.logger else False
         self.lock.acquire();
 
-    def _releaseLock(self):
+    def releaseLock(self):
         self.logger.debug("Releasing lock...") if self.logger else False
         self.lock.release();
+
+    def resetSerial(self):
+        self.conn.setDTR(False)
+        time.sleep(1)
+        self.conn.flushInput()
+        self.conn.setDTR(True)
+        self.connect()
 
     def wrap(self,cmd,*args):
         """ Обработчик для логов, lock-а и на случай ошибок типа 0x50 (принтер занят) """
 
         self.logger.debug("Calling %s cmd with args: %s",cmd,pprint.pformat(args)) if self.logger else False
 
-        self._acquireLock()
+        #self.acquireLock()
         while True:
             try:
                 ret = getattr(self, cmd )(*args)
@@ -66,14 +74,14 @@ class KilyKKT(kkt.KKT):
                 if hasattr(e,"value") and (0x50 == e.value):
                     continue
                 else:
-                    self._releaseLock()
+                    #self.releaseLock()
                     raise
             except:
-                self._releaseLock()
+                #self.releaseLock()
                 raise
             break
 
-        self._releaseLock()
+        #self.releaseLock()
         return ret
 
     def send(self, command, params, quick=False):
