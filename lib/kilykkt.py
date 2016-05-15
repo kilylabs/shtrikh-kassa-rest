@@ -33,6 +33,8 @@ class KilyKKT(kkt.KKT):
         if 'logger' in kwargs:
             self.logger = kwargs.pop('logger')
 
+        kkt.MAX_ATTEMPT = kkm_conf.MAX_ATTEMPT
+
         super(kkt.KKT, self).__init__(
                 password=kkm_conf.PASSWORD,
                 admin_password=kkm_conf.ADMIN_PASSWORD,
@@ -60,6 +62,7 @@ class KilyKKT(kkt.KKT):
         self.conn.flushInput()
         self.conn.setDTR(True)
         self.connect()
+        self.clear()
 
     def wrap(self,cmd,*args):
         """ Обработчик для логов, lock-а и на случай ошибок типа 0x50 (принтер занят) """
@@ -110,10 +113,10 @@ class KilyKKT(kkt.KKT):
     def _read(self, read=None):
         """ Высокоуровневый метод считывания соединения """
         s = self.conn.read(read)
-        self.logger.debug("Reading: "+":".join("{:02x}".format(ord(c)) for c in s)) if self.logger else False
+        self.logger.debug("Read: "+":".join("{:02x}".format(ord(c)) for c in s)) if self.logger else False
         return s
 
-    def ask(self, command, params=None, sleep=1, pre_clear=True,\
+    def ask(self, command, params=None, sleep=0, pre_clear=True,\
                 without_password=False, disconnect=True, quick=False):
         """ Высокоуровневый метод получения ответа. Состоит из
             последовательной цепочки действий. 

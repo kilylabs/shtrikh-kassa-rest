@@ -99,7 +99,7 @@ def on_inserted_checks(items):
 
                 sfrk.closeCheck(0,pays,0,taxes,text=u"------------------")
 
-        except kkt.KktError,e:
+        except kilykkt.kkt.KktError,e:
            sfrk.releaseLock()
            raise
         except:
