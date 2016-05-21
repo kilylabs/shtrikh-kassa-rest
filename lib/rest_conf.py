@@ -21,7 +21,7 @@ DOMAIN = {
             'client_name': {
                 'type': 'string',
                 'minlength': 0,
-                'maxlength': 32,
+                'maxlength': 128,
                 'required': False,
             },
             'order_id': {
