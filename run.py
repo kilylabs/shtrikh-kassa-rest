@@ -113,5 +113,12 @@ app.on_inserted_checks += on_inserted_checks
 app.on_inserted_report += on_inserted_report
 
 if __name__ == '__main__':
-    app.logger.info("starting kkm app...")
-    app.run(host=kkm_conf.LISTEN_HOST,port=kkm_conf.LISTEN_PORT)
+    if len(sys.argv) == 1:
+        app.logger.info("starting kkm app...")
+        app.run(host=kkm_conf.LISTEN_HOST,port=kkm_conf.LISTEN_PORT)
+    else:
+        sfrk = kilykkt.KilyKKT(
+                logger=app.logger
+                )
+        args = sys.argv[2:]
+        print getattr(sfrk, sys.argv[1] )(*args)
