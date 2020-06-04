@@ -7,6 +7,8 @@ import sys
 from eve import Eve
 import pprint
 import logging
+import json
+from bson import json_util
 from logging.handlers import RotatingFileHandler
 
 import kkm_conf
@@ -121,4 +123,4 @@ if __name__ == '__main__':
                 logger=app.logger
                 )
         args = sys.argv[2:]
-        print getattr(sfrk, sys.argv[1] )(*args)
+        print json.dumps(getattr(sfrk, sys.argv[1] )(*args),ensure_ascii=False,indent=4, sort_keys=True, default=str)
