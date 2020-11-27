@@ -14,7 +14,7 @@
 
 Для работы REST-сервера понадобится установка дополнительных модулей:
 ```bash
-$ pip install eve serial
+$ pip install eve pyserial
 ```
 
 ```bash
